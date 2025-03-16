@@ -22,6 +22,9 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import $fetch from "@/lib/fetch";
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 // Schema validasi menggunakan Zod
 const loginSchema = z.object({
@@ -30,6 +33,8 @@ const loginSchema = z.object({
 });
 
 function LoginPage() {
+  const [isLoading, setIsLoading] = useState (false);
+  const navigate = useNavigate();
   const form = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -38,10 +43,41 @@ function LoginPage() {
     },
   });
 
-  function onSubmit(value) {
-    console.log(value);
+  async function onSubmit(value) {
+    try {
+      setIsLoading(true);
+      const loginResponse = await $fetch.create("/api/login", value);
+      localStorage.setItem("access_token", loginResponse.data.token);
+      const profile = await $fetch.get("/api/user");
+      console.log(profile);
+      navigate('/dashboard/setting');
+    } catch (error) {
+      console.log(error); // Cek struktur error di console
+      if (error.meta?.validations) {
+        // Menampilkan pesan error validasi untuk setiap field
+        Object.keys(error.meta.validations).forEach((key) => {
+          form.setError(key, {
+            type: "server",
+            message: error.meta.validations[key][0], // Ambil pesan error pertama
+          });
+        });
+      } else if (error.meta?.messages?.length > 0) {
+        // Menampilkan pesan error umum jika ada
+        form.setError("root", {
+          type: "server",
+          message: error.meta.messages[0],
+        });
+      } else {
+        // Menampilkan pesan error default jika struktur error tidak dikenali
+        form.setError("root", {
+          type: "server",
+          message: "Terjadi kesalahan saat memproses permintaan.",
+        });
+      }
+    } finally{
+      setIsLoading(false);
+    }
   }
-
   return (
     <section className="min-h-screen bg-primary flex justify-center items-center">
       <div className="max-w-[480px] w-full p-8 space-y-6">
@@ -94,7 +130,7 @@ function LoginPage() {
                   )}
                 />
 
-                <Button type="submit" className="mt-2">
+                <Button type="submit" className="mt-2" loading={isLoading}>
                   Login
                 </Button>
               </form>

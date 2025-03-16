@@ -6,7 +6,8 @@ import ErrorPage from '@/pages/ErrorPage.jsx';
 import LoginPage from '@/pages/LoginPage.jsx';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import SettingPage from '@/pages/Dashboard/SettingPage';
-
+import DataFetching from '@/pages/Dashboard/DataFetching';
+import { Toaster } from "@/components/ui/sonner"
 
 
 const router = createBrowserRouter([
@@ -24,6 +25,10 @@ const router = createBrowserRouter([
         path: "/dashboard/setting",
         element: <SettingPage />
       },
+      {
+        path: "/dashboard/DataFetching",
+        element: <DataFetching  />
+      }
     ],
   },
 ]);
