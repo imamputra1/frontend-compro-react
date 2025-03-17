@@ -8,8 +8,12 @@ import { Label } from "@/components/ui/label";
 import InstagramIcon from "@/components/icon/instagram";
 import LinkedinIcon from "@/components/icon/linkedin";
 import FacebookIcon from "@/components/icon/facebook";
-import TwitterIcon from "@/components/icon/twiter";
+import YoutubeIcon from "@/components/icon/youtube";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/components/Provider/AuthProvider";
+import useGet from "@/hooks/useGet";
+import { useEffect, useState } from "react";
+import $fetch from "@/lib/fetch";
 
 const settingSchema = z.object({
   video_url: z
@@ -21,53 +25,108 @@ const settingSchema = z.object({
   email: z
     .string({ required_error: "Email wajib diisi" })
     .email({ message: "Email yang anda masukan tidak sesuai" }),
-  x_url: z
+  youtube: z
     .string({ required_error: "value is required" })
     .url("value  yang anda masukan tidak sesuai"),
-  facebook_url: z
+  facebook: z
     .string({ required_error: "value is required" })
     .url("value  yang anda masukan tidak sesuai"),
-  instagram_url: z
+  instagram: z
     .string({ required_error: "value is required" })
     .url("value  yang anda masukan tidak sesuai"),
-  linkedin_url: z
+  linked: z
     .string({ required_error: "value is required" })
     .url("value  yang anda masukan tidak sesuai"),
 });
 
 export default function SettingPage() {
+  const{profile} = useAuth();
+
+  const [loadingSave, setLoadingSave] = useState(false);
+
+  const{ data } = useGet('/api/get-setting')
+
   const form = useForm({
     resolver: zodResolver(settingSchema),
     defaultValues: {
       video_url: "",
       phone_number: "",
       email: "",
-      x_url: "",
-      facebook_url: "",
-      instagram_url: "",
-      linkedin_url: "",
+      youtube: "",
+      facebook: "",
+      instagram: "",
+      linked: "",
     },
   });
 
-  function onSubmit(value) {
-    console.log(value);
+  useEffect(() => {
+    form.reset({
+      video_url: data?.data?.video_url,
+      phone_number: data?.data?.phone_number,
+      email: data?.data?.email,
+      youtube: data?.data?.youtube,
+      facebook: data?.data?.facebook,
+      instagram: data?.data?.instagram,
+      linked: data?.data?.linked,
+    });
+  }, [data]);
+
+  async function onSubmit(values) {
+    try {
+      setLoadingSave(true); // Set loading state to true
+      const response = await $fetch.create("/api/update-setting", values);
+  
+      // Reset form manually (jika form dikelola secara manual)
+      // Contoh: setFormState({ video_url: response.data.video_url, ... });
+      console.log("Form updated successfully:", response.data);
+  
+      // Tampilkan pesan sukses (bisa menggunakan alert atau console.log)
+      alert("Success update setting");
+      console.log("Success update setting");
+  
+    } catch (error) {
+      // Handle error tanpa toast
+      if (error.meta?.messages?.[0]) {
+        console.error("Error:", error.meta.messages[0]);
+        alert("Error: " + error.meta.messages[0]); // Tampilkan pesan error menggunakan alert
+        return;
+      }
+  
+      // Handle validasi error (jika ada)
+      if (error.meta?.validations) {
+        Object.keys(error.meta.validations).forEach((key) => {
+          console.error(`Validation error for ${key}:`, error.meta.validations[key][0]);
+          // Jika Anda mengelola error state secara manual:
+          // setErrors((prevErrors) => ({
+          //   ...prevErrors,
+          //   [key]: error.meta.validations[key][0],
+          // }));
+        });
+      } else {
+        console.error("An unexpected error occurred:", error);
+        alert("An unexpected error occurred. Please try again."); // Tampilkan pesan error umum
+      }
+    } finally {
+      setLoadingSave(false); // Set loading state to false
+    }
   }
+
 
   return (
     <div>
       <Title title={'PENGATURAN'} caption={'Pastikan input yang dimasukan dalam form sesuai dengan format yang sesuai.'} />
       <Form {...form}>
         <form
-          className="grid grid-cols-2 gap-10 pb-8 pl-10"
+          className="grid grid-cols-2 gap-10 pb-8 pl-10" 
           onSubmit={form.handleSubmit(onSubmit)}
         >
           <div className="space-y-8">
             <FormField
               control={form.control}
               name="video_url"
-              render={({ field }) => (
+              render={({ field }) => ( 
                 <FormItem>
-                  <FormLabel> Video youtube (url)</FormLabel>
+                  <FormLabel> video_url</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="https://www.youtube.com/watch?v=NL78mGiK2jA"
@@ -83,7 +142,7 @@ export default function SettingPage() {
               name="phone_number"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nomor Handphone</FormLabel>
+                  <FormLabel>phone_number</FormLabel>
                   <FormDescription>
                   Tambahkan nomor telepon agar pengguna tahu di mana mereka dapat menghubungi kita.
                   </FormDescription>
@@ -116,11 +175,11 @@ export default function SettingPage() {
               <Label>Social Media</Label>
               <FormField
                 control={form.control}
-                name="x_url"
+                name="youtube"
                 render={({ field }) => (
                   <FormItem>
                     <div className="flex gap-2">
-                      <TwitterIcon />
+                      <YoutubeIcon />
                       <FormControl>
                         <Input
                           placeholder="https://x.com/username"
@@ -134,7 +193,7 @@ export default function SettingPage() {
               />
               <FormField
                 control={form.control}
-                name="facebook_url"
+                name="facebook"
                 render={({ field }) => (
                   <FormItem>
                     <div className="flex gap-2">
@@ -152,7 +211,7 @@ export default function SettingPage() {
               />
               <FormField
                 control={form.control}
-                name="instagram_url"
+                name="instagram"
                 render={({ field }) => (
                   <FormItem>
                     <div className="flex gap-2">
@@ -170,7 +229,7 @@ export default function SettingPage() {
               />
               <FormField
                 control={form.control}
-                name="linkedin_url"
+                name="linked"
                 render={({ field }) => (
                   <FormItem>
                     <div className="flex gap-2">

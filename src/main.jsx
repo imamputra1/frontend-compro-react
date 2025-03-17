@@ -8,29 +8,41 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import SettingPage from '@/pages/Dashboard/SettingPage';
 import DataFetching from '@/pages/Dashboard/DataFetching';
 import { Toaster } from "@/components/ui/sonner"
+import { Authprovider } from '@/components/Provider/AuthProvider';
+import { ProtectedRoute } from '@/components/Route/ProtectedRoute';
+import { NoAuthRoute } from '@/components/Route/NoAuthRoute';
+
 
 
 const router = createBrowserRouter([
 
   {
-    path: "/",
-    element: <LoginPage />,
+    path: '/',
+    element: <Authprovider />,
     errorElement: <ErrorPage />,
-  },
-  {
-    path: "/dashboard",
-    element: <DashboardLayout />,
     children: [
       {
-        path: "/dashboard/setting",
-        element: <SettingPage />
+        path: "/",
+        element: <NoAuthRoute><LoginPage /></NoAuthRoute> ,
       },
       {
-        path: "/dashboard/DataFetching",
-        element: <DataFetching  />
-      }
-    ],
-  },
+        path: "/dashboard",
+        element: <ProtectedRoute>
+                  <DashboardLayout />
+        </ProtectedRoute>,
+        children: [
+          {
+            path: "/dashboard/setting",
+            element: <SettingPage />
+          },
+          {
+            path: "/dashboard/DataFetching",
+            element: <DataFetching  />
+          }
+        ],
+      },
+    ]
+  }
 ]);
 
 createRoot(document.getElementById('root')).render(

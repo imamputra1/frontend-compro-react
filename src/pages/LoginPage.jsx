@@ -22,9 +22,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import $fetch from "@/lib/fetch";
-import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useAuth } from "@/components/Provider/AuthProvider";
 
 // Schema validasi menggunakan Zod
 const loginSchema = z.object({
@@ -33,8 +32,8 @@ const loginSchema = z.object({
 });
 
 function LoginPage() {
+  const {login} = useAuth();
   const [isLoading, setIsLoading] = useState (false);
-  const navigate = useNavigate();
   const form = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -46,11 +45,7 @@ function LoginPage() {
   async function onSubmit(value) {
     try {
       setIsLoading(true);
-      const loginResponse = await $fetch.create("/api/login", value);
-      localStorage.setItem("access_token", loginResponse.data.token);
-      const profile = await $fetch.get("/api/user");
-      console.log(profile);
-      navigate('/dashboard/setting');
+      await login(value);
     } catch (error) {
       console.log(error); // Cek struktur error di console
       if (error.meta?.validations) {

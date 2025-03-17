@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { Navbar } from "@/components/ui/navbar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,17 +13,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAuth } from "../Provider/AuthProvider";
 
 export default function DashboardLayout() {
-  const navigate = useNavigate()
-  function logout(){
-    localStorage.removeItem("access_token");
-    navigate("/");
-  }
+  const {logout, profile} = useAuth();
   return (
     <section className="h-screen flex items-stretch">
       {/* Sidebar */}
-      <section className="w-64 border-r bg-primary-foreground text-primary">
+      <section className="w-64  border-r bg-primary-foreground text-primary">
         <div className="max-w-[980px] w-full p-2 space-y-1">
           <div className="flex flex-col items-center space-y-4">
             <img src={logo} alt="logo" className="w-110 h10" /> {/* Logo */}
@@ -52,16 +49,16 @@ export default function DashboardLayout() {
           <DropdownMenu>
             <DropdownMenuTrigger>
               <Avatar>
-                <AvatarImage src="https://github.com/shadcn.png" />
-                <AvatarFallback>AT</AvatarFallback>
+                <AvatarImage src={profile?.image}/>
+                <AvatarFallback>{profile?.name?.[0]}</AvatarFallback>
               </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-600" onClick={logout} >
+              <DropdownMenuItem className="text-red-600" onClick ={logout} >
                 <LogOut /> Keluar
-              </DropdownMenuItem>
+              </DropdownMenuItem> 
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
